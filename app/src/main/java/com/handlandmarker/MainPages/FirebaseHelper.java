@@ -309,7 +309,7 @@ public class FirebaseHelper {
                 });
     }
 
-    void LoadGroups_For_User(String userID)
+    public void LoadGroups_For_User(String userID)
     {
         getGroupsForMember(userID, new OnGroups_From_User() {
             @Override
@@ -412,9 +412,10 @@ public class FirebaseHelper {
 
     public interface OnUserJoinedListener {
         void onUserJoined(String userID);
+        void onUserLeft(ArrayList<String> userID);
     }
-    public void listenForUserJoined(String groupID, String group_Name,OnUserJoinedListener listener) {
-        db_grp.collection(_Groups).document(groupID).collection(Voice_Box).document(Voice_Box+group_Name)
+    public void listenForUserJoined(String groupID, String group_Name,String Channel ,ArrayList<String> UserPresent,OnUserJoinedListener listener) {
+        db_grp.collection(_Groups).document(groupID).collection(Channel).document(Channel+group_Name)
                 .addSnapshotListener((snapshot, e) -> {
                     if (e != null) {
                         Log.e("Firebase", "Listen failed: " + e.getMessage());
@@ -425,7 +426,26 @@ public class FirebaseHelper {
                         for (String str : (ArrayList<String>) snapshot.get(Members_Present)) {
                             // Extract user joined data and pass it to the listener
                             String userID = str; // Assuming the user ID is the document ID
-                            listener.onUserJoined(userID);
+                            if(!UserPresent.contains(userID))
+                            {
+                                listener.onUserJoined(userID);
+                            }
+                        }
+                        ArrayList<String> prsent = (ArrayList<String>) snapshot.get(Members_Present);
+                        ArrayList<String> total = new ArrayList<>();
+                        total.addAll(UserPresent);
+                        boolean left = false;
+                        for (String str: UserPresent)
+                        {
+                            if(!prsent.contains(str))
+                            {
+                                left = true;
+                                total.remove(str);
+                            }
+                        }
+                        if(left)
+                        {
+                            listener.onUserLeft(total);
                         }
                     } else {
                         Log.d("Firebase", "No users joined");
@@ -433,6 +453,91 @@ public class FirebaseHelper {
                 });
     }
 
+
+    public void AddUserToGroupVoiceChat(String group_ID,String groupname,String chanal)
+    {
+        DocumentReference voiceChatGroupRef = db_grp.collection(_Groups)
+                .document(group_ID)
+                .collection(chanal)
+                .document(chanal + groupname);
+
+        // Update the Members_Present field with the user's ID
+        voiceChatGroupRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                ArrayList<String> membersPresent = (ArrayList<String>) documentSnapshot.get(Members_Present);
+                if (membersPresent != null) {
+                    // Add the user's ID to the list of members present
+                    membersPresent.add(CurrentUser.globalVariable.getUserID());
+                    // Update the document with the updated list of members present
+                    voiceChatGroupRef.update(Members_Present, membersPresent)
+                            .addOnSuccessListener(aVoid -> Log.d("Firebase", "User added to voice chat group successfully"))
+                            .addOnFailureListener(e -> Log.e("Firebase", "Error adding user to voice chat group: " + e.getMessage()));
+                }
+            } else {
+                Log.e("Firebase", "Voice chat group document does not exist");
+            }
+        }).addOnFailureListener(e -> Log.e("Firebase", "Error fetching voice chat group document: " + e.getMessage()));
+    }
+
+    public void removeUserFromGroupVoiceChat(String groupID, String groupname, String Chanal) {
+        if (groupID != null && groupname != null) {
+            // Get a reference to the voice chat group document
+            DocumentReference voiceChatGroupRef = db_grp.collection(_Groups)
+                    .document(groupID)
+                    .collection(Chanal)
+                    .document(Chanal + groupname);
+
+            voiceChatGroupRef.get().addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    ArrayList<String> membersPresent = (ArrayList<String>) documentSnapshot.get(Members_Present);
+                    if (membersPresent != null) {
+                        // Add the user's ID to the list of members present
+                         membersPresent.remove(CurrentUser.globalVariable.getUserID());
+                            // Update the document with the updated list of members present
+                        voiceChatGroupRef.update(Members_Present, membersPresent)
+                                .addOnSuccessListener(aVoid -> Log.d("Firebase", "User removed from voice chat group successfully"))
+                                .addOnFailureListener(e -> Log.e("Firebase", "Error removing user from voice chat group: ", e));
+                        }
+                } else {
+                    Log.e("Firebase", "Voice chat group document does not exist");
+                }
+            }).addOnFailureListener(e -> Log.e("Firebase", "Error fetching voice chat group document: ", e));
+        } else {
+            Log.e("Firebase", "Invalid group ID or user ID");
+        }
+    }
+
+    public void listenForMemberPresenting(String groupID, String groupname, OnMemberPresentingListener listener) {
+        DocumentReference voiceChatGroupRef = db_grp.collection(_Groups)
+                .document(groupID)
+                .collection(_ScreenShare)
+                .document(_ScreenShare + groupname);
+
+        voiceChatGroupRef.addSnapshotListener((documentSnapshot, e) -> {
+            if (e != null) {
+                Log.e("Firebase", "Listen failed: " + e.getMessage());
+                return;
+            }
+
+            if (documentSnapshot != null && documentSnapshot.exists()) {
+                // Check if the Member_presenting field exists
+                if (documentSnapshot.contains(Member_presenting)) {
+                    // Get the value of Member_presenting field
+                    String presentingUserID = documentSnapshot.getString(Member_presenting);
+                    listener.onMemberPresenting(presentingUserID);
+                } else {
+                    // The Member_presenting field doesn't exist or is null
+                    listener.onMemberPresenting(null);
+                }
+            } else {
+                Log.d("Firebase", "Voice chat group document does not exist");
+            }
+        });
+    }
+
+    public interface OnMemberPresentingListener {
+        void onMemberPresenting(String presentingUserID);
+    }
 
 }
 

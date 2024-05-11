@@ -45,6 +45,7 @@ public class ChatsAdapter extends RecyclerView.Adapter<ChatsAdapter.ViewHolder> 
                 @Override
                 public void onClick(View v) {
                     Intent i = new Intent(c1, Channels.class);
+                    CurrentUser.CurrentGroup = CurrentUser.Groups.get(position);
                     i.putExtra("groupName", CurrentUser.Groups.get(position).getGroupName());
                     i.putExtra("groupID", CurrentUser.Groups.get(position).getGroupID());
                     c1.startActivity(i);

@@ -87,7 +87,14 @@ public class Firebase_Auth implements Register.SignInListener, Register.SignUpLi
         return false;
     }
 
-
+    public  Users getCurrentUser()
+    {
+        if(mAuth.getCurrentUser()!=null)
+        {
+            return new Users(null,mAuth.getCurrentUser().getUid());
+        }
+        return null;
+    }
 
     // Sign out the current user
     public void signOut() {

@@ -15,6 +15,7 @@ import com.handlandmarker.AgoraPart.App
 import com.handlandmarker.AgoraPart.AppCertificate
 import com.handlandmarker.AgoraPart.RtcTokenBuilder2
 import com.handlandmarker.MainPages.FirebaseHelper
+import com.handlandmarker.accets.CurrentUser
 import com.handlandmarker.accets.Users
 import io.agora.rtc2.ChannelMediaOptions
 import io.agora.rtc2.Constants
@@ -39,11 +40,18 @@ class AudioCallActivity : AppCompatActivity() {
     var isJoined = false // Status of the video call
         private set
     var isBroadcaster = true // Local user role
+    var  groupID:String? = null
 
+    lateinit var recyclerView:RecyclerView
+    lateinit var Adapter: MyAdapterAudioCall
+    var UsersJoined: ArrayList<String> = ArrayList()
+
+    var fbHelper:FirebaseHelper = FirebaseHelper()
     private val mRtcEventHandler: IRtcEngineEventHandler = object : IRtcEngineEventHandler() {
         // Listen for a remote user joining the channel.
         override fun onUserJoined(uid: Int, elapsed: Int) {
             Log.d("info" ,"Remote user joined $UserName")
+
             // Save the uid of the remote user.
             remoteUids.add(uid)
         }
@@ -54,6 +62,8 @@ class AudioCallActivity : AppCompatActivity() {
             Log.d("info" ,"Joined Channel $channel")
             // Save the uid of the local user.
             localUid = uid
+            fbHelper.AddUserToGroupVoiceChat(groupID,CurrentUser.CurrentGroup.getGroupName(),fbHelper.Voice_Box)
+            addNewUserToCall()
 
         }
 
@@ -90,9 +100,34 @@ class AudioCallActivity : AppCompatActivity() {
         }
         return true
     }
-
-
     val expirationTimeInSeconds = 3600
+
+    private fun addNewUserToCall() {
+        // Listen for new users joined and add them to the list
+        val userJoinedListener = object : FirebaseHelper.OnUserJoinedListener {
+            override fun onUserJoined(userID: String) {
+                // Create a new user object and add it to the list
+                //  val newUser = Users(null,userID) // Assuming you have a constructor in Users class
+                UsersJoined.add(userID)
+                Adapter.notifyItemInserted(UsersJoined.size - 1)
+                // Notify the adapter of the changes
+
+            }
+
+            override fun onUserLeft(userID: ArrayList<String>?) {
+                    // Update the UsersJoined list outside the loop
+                if (userID != null) {
+                    runOnUiThread {
+                        UsersJoined.clear()
+                            UsersJoined.addAll(userID)
+                        Adapter.notifyDataSetChanged()
+                    }
+                }
+            }
+
+        }
+            fbHelper.listenForUserJoined(groupID, CurrentUser.CurrentGroup.getGroupName(),fbHelper.Voice_Box,UsersJoined,userJoinedListener)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_audio_call)
@@ -103,8 +138,14 @@ class AudioCallActivity : AppCompatActivity() {
         Manger.setAudioOutputDevice(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)
         Manger.setAudioInputSource(AudioDeviceInfo.TYPE_BUILTIN_MIC)
 
+        Adapter = MyAdapterAudioCall(this, UsersJoined)
+        val recyclerView: RecyclerView = findViewById(R.id.Audio_IMGS)
+        recyclerView.adapter = Adapter
+        recyclerView.layoutManager = GridLayoutManager(baseContext,3)
 
-        val groupID = intent.getStringExtra("groupID")
+
+
+        groupID = intent.getStringExtra("groupID")
         channelName = if (groupID != null) {
             // If groupID is not null, use it to set the channelName
             "Voice_Call_$groupID"
@@ -119,11 +160,16 @@ class AudioCallActivity : AppCompatActivity() {
         var leaveCall:ImageView = findViewById(R.id.endAudiocall)
         leaveCall.setOnClickListener(
             View.OnClickListener {
+                fbHelper.removeUserFromGroupVoiceChat(groupID,CurrentUser.CurrentGroup.getGroupName(),fbHelper.Voice_Box)
                 leaveChannel()
-                finish()
             }
         )
         // Initialize the Agora RTC Engine with your App ID
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        moveTaskToBack(true)
     }
     open fun joinChannel(channelName: String, token: String?): Int {
         // Ensure that necessary Android permissions have been granted
@@ -152,9 +198,11 @@ class AudioCallActivity : AppCompatActivity() {
 
             // Set the `isJoined` status to false
             isJoined = false
+            finish()
             // Destroy the engine instance
-            destroyAgoraEngine()
+
         }
+
     }
     protected fun destroyAgoraEngine() {
         // Release the RtcEngine instance to free up resources

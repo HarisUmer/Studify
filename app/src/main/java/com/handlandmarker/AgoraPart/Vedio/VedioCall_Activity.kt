@@ -16,6 +16,8 @@ import com.handlandmarker.AgoraPart.App
 import com.handlandmarker.AgoraPart.AppCertificate
 import com.handlandmarker.AgoraPart.Audio.AudioSettingsManager
 import com.handlandmarker.AgoraPart.RtcTokenBuilder2
+import com.handlandmarker.MainPages.FirebaseHelper
+import com.handlandmarker.accets.CurrentUser
 import io.agora.rtc2.ChannelMediaOptions
 import io.agora.rtc2.Constants
 import io.agora.rtc2.IRtcEngineEventHandler
@@ -38,8 +40,33 @@ class VedioCall_Activity : AppCompatActivity() {
         private set
     var isBroadcaster = true // Local user role
     lateinit var Addapter: PersonVideoAdapter
+    var UsersJoined: ArrayList<String> = ArrayList()
 
 
+    private fun addNewUserToVedioCall() {
+        // Listen for new users joined and add them to the list
+        val userJoinedListener = object : FirebaseHelper.OnUserJoinedListener {
+            override fun onUserJoined(userID: String) {
+                // Create a new user object and add it to the list
+                //  val newUser = Users(null,userID) // Assuming you have a constructor in Users class
+                UsersJoined.add(userID)
+                // Notify the adapter of the changes
+            }
+
+            override fun onUserLeft(userID: ArrayList<String>?) {
+                // Update the UsersJoined list outside the loop
+                if (userID != null) {
+                    runOnUiThread {
+                        UsersJoined.clear()
+                        UsersJoined.addAll(userID)
+                    }
+                }
+            }
+
+        }
+        val fbHelper = FirebaseHelper()
+        fbHelper.listenForUserJoined(CurrentUser.CurrentGroup.getGroupID(), CurrentUser.CurrentGroup.getGroupName(),fbHelper._Vedio_Inbox,UsersJoined,userJoinedListener)
+    }
     private val mRtcEventHandler: IRtcEngineEventHandler = object : IRtcEngineEventHandler() {
         // Listen for a remote user joining the channel.
 
@@ -56,6 +83,9 @@ class VedioCall_Activity : AppCompatActivity() {
             Log.d("Message","Joined Channel $channel")
             // Save the uid of the local user.
             localUid = uid
+            var Fb = FirebaseHelper()
+            Fb.AddUserToGroupVoiceChat(CurrentUser.CurrentGroup.getGroupID(),CurrentUser.CurrentGroup.getGroupName(),Fb._Vedio_Inbox)
+            addNewUserToVedioCall()
         }
 
         fun onRemoteUserLeft1(remoteUid: Int, arr1: HashSet<Int>): Int
@@ -162,6 +192,8 @@ class VedioCall_Activity : AppCompatActivity() {
         var leaveCall: ImageView = findViewById(R.id.endVediocall)
         leaveCall.setOnClickListener(
             View.OnClickListener {
+                var b1 = FirebaseHelper()
+                b1.removeUserFromGroupVoiceChat(CurrentUser.CurrentGroup.getGroupID(),CurrentUser.CurrentGroup.getGroupName(),b1._Vedio_Inbox)
                 leaveChannel()
                 finish()
             }

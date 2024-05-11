@@ -16,7 +16,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+       // testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -109,7 +109,6 @@ dependencies {
 
     //wrapper
     implementation ("com.fasterxml.jackson.core:jackson-databind:2.13.0") // Or the latest version
-
 
     implementation("commons-codec:commons-codec:1.11")
 }

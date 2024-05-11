@@ -61,6 +61,8 @@ public class textChat extends AppCompatActivity {
                     FirebaseHelper fb = new FirebaseHelper();
                     fb.sendMessageToGroup(Group.getGroupID(),mes,Group.getCount());
                     Group.setCount(Group.getCount()+1);
+                    EditText text= findViewById(R.id.Message_tobe_sent);
+                    text.setText("");
                 }
             }
         });
@@ -81,11 +83,16 @@ public class textChat extends AppCompatActivity {
             public void onMessageReceived(String userID, String message, String time, int Count) {
                 LocalDateTime time1 = parseTimeString(time);
                 if(Count > arr.size()-1) {
-                    Message newMessage = new Message(Count, message, userID, "YOUR_GROUP_ID", time1);
+                    Message newMessage = new Message(Count, message, userID, CurrentUser.CurrentGroup.getGroupID(), time1);
                     arr.add(newMessage);
 
                     // Add the message to your adapter
+
                     MessageAdapter.notifyItemInserted(arr.size() - 1);
+                    if(arr.size()-1>10) {
+                        rv_textchat.scrollToPosition(arr.size() - 1);
+                    }
+
                 }
                 // Notify the adapter that new data has been added
                 // Scroll the RecyclerView to the bottom to show the latest message

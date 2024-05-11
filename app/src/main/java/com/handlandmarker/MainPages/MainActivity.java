@@ -91,7 +91,23 @@ public class MainActivity extends AppCompatActivity {
     private void init()
     {
         FirebaseHelper firebaseHelper = new FirebaseHelper();
-        firebaseHelper.LoadGroups_For_User(CurrentUser.globalVariable.getUserID());
+        if(CurrentUser.globalVariable!=null)
+        {
+            firebaseHelper.LoadGroups_For_User(CurrentUser.globalVariable.getUserID());
+        }
+        else
+        {
+            Firebase_Auth fb= new Firebase_Auth();
+            if(fb.isUserSignedIn())
+            {
+                CurrentUser.globalVariable = fb.getCurrentUser();
+                firebaseHelper.LoadGroups_For_User(CurrentUser.globalVariable.getUserID());
+            }
+            else
+            {
+                finish();
+            }
+        }
         img=findViewById(R.id.img_dp);
         //----------------------------------------------------------
         firebaseHelper.db_user.collection(firebaseHelper._Users).document(CurrentUser.globalVariable.getUserID())

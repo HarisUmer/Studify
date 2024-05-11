@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Your existing FrameLayout -->
+    <FrameLayout
+        android:id="@+id/Screen_Share_Frame"
+        android:layout_width="match_parent"
+        android:layout_height="500dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginLeft="20dp"
+
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:background="@android:color/darker_gray"
+        app:layout_constraintBottom_toTopOf="@+id/Screen_Share_RR"
+        tools:layout_editor_absoluteX="20dp">
+
+
+    </FrameLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/Screen_Share_RR"
+        android:layout_width="410dp"
+        android:layout_height="167dp"
+        android:layout_above="@+id/Screen_Share_buttonLayout"
+        app:layout_constraintBottom_toTopOf="@+id/Screen_Share_buttonLayout"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Your existing RecyclerView -->
+
+    <!-- New LinearLayout for buttons -->
+    <LinearLayout
+        android:id="@+id/Screen_Share_buttonLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="bottom"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- Add your buttons here -->
+        <Button
+            android:id="@+id/Screen_Share_Mute"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="10dp"
+            android:text="Button 1" />
+
+        <Button
+            android:id="@+id/Screen_Share_LeaveCall"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="10dp"
+            android:text="Button 2" />
+
+        <Button
+            android:id="@+id/Share_Screen_Share"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="10dp"
+            android:text="Button 3" />
+
+        <!-- Option button to open options -->
+        <ImageButton
+            android:id="@+id/optionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:src="@mipmap/ic_option" /> <!-- Replace with your icon drawable -->
+    </LinearLayout>
+
+    <!-- Small options view (you can customize this) -->
+    <LinearLayout
+        android:id="@+id/Screen_Share_optionsView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/Screen_Share_buttonLayout"
+        app:layout_constraintEnd_toEndOf="@+id/Screen_Share_Frame">
+
+        <Button
+            android:id="@+id/Screen_share_Canvas"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="-11dp"
+            android:layout_weight="1"
+            android:text="Canvas" />
+
+        <Button
+            android:id="@+id/Screen_Share_SlideShow"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="-11dp"
+            android:layout_weight="1"
+            android:text="Presentaion" />
+
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,9 +1,25 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.MediaP" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
+    <style name="Base.Theme.Studify" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- Primary Brand Color -->
+        <item name="colorPrimary">@color/Lavender</item>
+        <item name="colorPrimaryVariant">@color/Lavender</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondry Brand Color -->
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
+        <item name="colorOnSecondary">@color/black</item>
+        
+        <!-- Customize your light theme here. -->
+        <item name="android:navigationBarColor">@color/Lavender</item>
+        
+    </style>
+    
+    <style name="DialogAnimation">
+        <item name="android:windowExitAnimation">@anim/slide_out</item>
+        <item name="android:windowEnterAnimation">@anim/slide_in</item>
     </style>
 
-    <style name="Theme.MediaP" parent="Base.Theme.MediaP" />
+    <style name="Theme.Studify" parent="Base.Theme.Studify" />
 </resources>

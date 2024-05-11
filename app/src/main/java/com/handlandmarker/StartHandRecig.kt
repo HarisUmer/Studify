@@ -19,12 +19,12 @@ package com.handlandmarker
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.example.mediap.R
+import com.example.studify.R
 import com.handlandmarker.Camera_Landmarks.CameraManager
 import com.handlandmarker.Canvas.CustomView
 
 
-class MainActivity : AppCompatActivity() {
+class StartHandRecig : AppCompatActivity() {
     private  lateinit var view1 : CustomView
     private lateinit var C1: CameraManager
     private val viewModel : MainViewModel by viewModels()

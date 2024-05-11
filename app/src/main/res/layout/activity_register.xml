@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.handlandmarker.MainPages.Register">
+
+
+    <fragment
+        android:id="@+id/frag_login_view"
+        android:name="com.handlandmarker.MainPages.fragLogin"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+
+        />
+
+    <fragment
+        android:id="@+id/frag_register_view"
+        android:name="com.handlandmarker.MainPages.fragRegister"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+</androidx.constraintlayout.widget.ConstraintLayout>

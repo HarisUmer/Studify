@@ -9,7 +9,7 @@ import android.view.SurfaceView
 import android.view.View
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.mediap.R
+import com.example.studify.R
 import io.agora.rtc2.*
 import io.agora.rtc2.video.VideoCanvas
 import org.json.JSONException
@@ -110,73 +110,8 @@ open class AgoraManager(context: Context) {
         mListener!!.onRemoteUserJoined(remoteUid, remoteSurfaceView)
     }
 
-    protected open fun setupAgoraEngine(): Boolean {
-        try {
-            // Set the engine configuration
-            val config = RtcEngineConfig()
-            config.mContext = mContext
-            config.mAppId = appId
-            // Assign an event handler to receive engine callbacks
-            config.mEventHandler = iRtcEngineEventHandler
-            // Create an RtcEngine instance
-            agoraEngine = RtcEngine.create(config)
-            // By default, the video module is disabled, call enableVideo to enable it.
-            agoraEngine!!.enableVideo()
-        } catch (e: Exception) {
-            sendMessage(e.toString())
-            return false
-        }
-        return true
-    }
 
-    fun joinChannel(): Int {
-        // Use channelName and token from the config file
-        val token = config!!.optString("rtcToken")
-        return joinChannel(channelName, token)
-    }
 
-    open fun joinChannel(channelName: String, token: String?): Int {
-        // Ensure that necessary Android permissions have been granted
-        if (!checkSelfPermission()) {
-            sendMessage("Permissions were not granted")
-            return -1
-        }
-        this.channelName = channelName
-
-        // Create an RTCEngine instance
-        if (agoraEngine == null) setupAgoraEngine()
-        val options = ChannelMediaOptions()
-        if (currentProduct == ProductName.VIDEO_CALLING || currentProduct == ProductName.VOICE_CALLING) {
-            // For a Video/Voice call, set the channel profile as COMMUNICATION.
-            options.channelProfile = Constants.CHANNEL_PROFILE_COMMUNICATION
-            isBroadcaster = true
-        } else {
-            // For Live Streaming and Broadcast streaming,
-            // set the channel profile as LIVE_BROADCASTING.
-            options.channelProfile = Constants.CHANNEL_PROFILE_LIVE_BROADCASTING
-            if (!isBroadcaster && currentProduct == ProductName.BROADCAST_STREAMING) {
-                // Set Low latency for Broadcast streaming
-                options.audienceLatencyLevel =
-                    Constants.AUDIENCE_LATENCY_LEVEL_LOW_LATENCY
-            } else if (!isBroadcaster && currentProduct == ProductName.INTERACTIVE_LIVE_STREAMING) {
-                options.audienceLatencyLevel =
-                    Constants.AUDIENCE_LATENCY_LEVEL_ULTRA_LOW_LATENCY
-            }
-        }
-
-        // Set the client role as BROADCASTER or AUDIENCE according to the scenario.
-        if (isBroadcaster) { // Broadcasting Host or Video-calling client
-            options.clientRoleType = Constants.CLIENT_ROLE_BROADCASTER
-            // Start local preview.
-            agoraEngine!!.startPreview()
-        } else { // Audience
-            options.clientRoleType = Constants.CLIENT_ROLE_AUDIENCE
-        }
-
-        // Join the channel with a token.
-        agoraEngine!!.joinChannel(token, channelName, localUid, options)
-        return 0
-    }
 
     open fun leaveChannel() {
         if (!isJoined) {
@@ -199,48 +134,7 @@ open class AgoraManager(context: Context) {
         agoraEngine = null
     }
 
-    protected open val iRtcEngineEventHandler: IRtcEngineEventHandler?
-        get() = object : IRtcEngineEventHandler() {
-            // Listen for a remote user joining the channel.
-            override fun onUserJoined(uid: Int, elapsed: Int) {
-                sendMessage("Remote user joined $uid")
-                // Save the uid of the remote user.
-                remoteUids.add(uid)
-                if (isBroadcaster && (currentProduct == ProductName.INTERACTIVE_LIVE_STREAMING
-                            || currentProduct == ProductName.BROADCAST_STREAMING)
-                ) {
-                    // Remote video does not need to be rendered
-                } else {
-                    // Set up and return a SurfaceView for the new user
-                    setupRemoteVideo(uid)
-                }
-            }
 
-            override fun onJoinChannelSuccess(channel: String, uid: Int, elapsed: Int) {
-                // Set the joined status to true.
-                isJoined = true
-                sendMessage("Joined Channel $channel")
-                // Save the uid of the local user.
-                localUid = uid
-                mListener!!.onJoinChannelSuccess(channel, uid, elapsed)
-            }
-
-            override fun onUserOffline(uid: Int, reason: Int) {
-                sendMessage("Remote user offline $uid $reason")
-                // Update the list of remote Uids
-                remoteUids.remove(uid)
-                // Notify the UI
-                mListener!!.onRemoteUserLeft(uid)
-            }
-
-            override fun onError(err: Int) {
-                when (err) {
-                    ErrorCode.ERR_TOKEN_EXPIRED -> sendMessage("Your token has expired")
-                    ErrorCode.ERR_INVALID_TOKEN -> sendMessage("Your token is invalid")
-                    else -> sendMessage("Error code: $err")
-                }
-            }
-        }
 
     protected fun checkSelfPermission(): Boolean {
         return ContextCompat.checkSelfPermission(

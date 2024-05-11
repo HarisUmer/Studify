@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "417788767176",
+    "firebase_url": "https://studify-6b9fa-default-rtdb.firebaseio.com",
+    "project_id": "studify-6b9fa",
+    "storage_bucket": "studify-6b9fa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:417788767176:android:0c69fd69dbd37026a6eefd",
+        "android_client_info": {
+          "package_name": "com.example.studify"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQAvxoL0Esc2MWkClMWBAck6jnHICFFKo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

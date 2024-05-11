@@ -8,6 +8,8 @@ import android.graphics.Path
 import android.util.AttributeSet
 import android.view.View
 
+var flag: Boolean = false
+
 class CustomView(context: Context,attrs: AttributeSet?) : View(context,attrs) {
 
     private var paint: Paint = Paint()
@@ -16,6 +18,12 @@ class CustomView(context: Context,attrs: AttributeSet?) : View(context,attrs) {
 
     private var pointerX: Float =10F
     private var pointerY: Float =10F
+    private var lastTouchX: Float = 0F
+    private var lastTouchY: Float = 0F
+
+    private var pathPoints: MutableList<Pair<Float, Float>> = mutableListOf()
+
+
     init {
 
         paint.apply {
@@ -49,14 +57,68 @@ class CustomView(context: Context,attrs: AttributeSet?) : View(context,attrs) {
     }
 
     fun drawWithCoordinates(x: Float, y: Float) {
-        var x1 = x * 400
-        var y1 =y* 400
-        path.lineTo(x1, y1)
-        pointerX = x1
-        pointerY = y1
-        invalidate()
+        // Update the path to draw a line from the last touch position to the current cursor position
+        paint.color = Color.GREEN
+        if (flag==false)
+        {
+            lastTouchX = x*width
+            lastTouchY = y*height
+            flag= true
+        }
+        //path.reset() // Clear the previous path
+        path.moveTo(lastTouchX, lastTouchY) // Move to the last touch position
+        path.lineTo(x * width, y * height) // Draw a line to the current cursor position
 
+        // Update the last touch position
+        lastTouchX = x * width
+        lastTouchY = y * height
+
+        pointerX = x*width
+        pointerY = y*height
+
+        // Invalidate the view to trigger onDraw
+        invalidate()
     }
+    fun removeAtCursor(x: Float, y: Float){
+        // Update the path to draw a line from the last touch position to the current cursor position
+        paint.color = Color.YELLOW
+        if (flag==false)
+        {
+            lastTouchX = x*width
+            lastTouchY = y*height
+            flag= true
+        }
+        //path.reset() // Clear the previous path
+        path.moveTo(lastTouchX, lastTouchY) // Move to the last touch position
+        path.lineTo(x * width, y * height) // Draw a line to the current cursor position
+
+        // Update the last touch position
+        lastTouchX = x * width
+        lastTouchY = y * height
+
+        pointerX = x*width
+        pointerY = y*height
+        //paint.color = Color.GREEN
+        // Invalidate the view to trigger onDraw
+        invalidate()
+    }
+
+
+    fun moveCursor(x: Float, y: Float) {
+        // Convert x and y to view coordinates
+        val xInView = x * width
+        val yInView = y * height
+
+        // Update pointer position
+        pointerX = xInView
+        pointerY = yInView
+
+        flag = false
+
+        // Invalidate the view to trigger onDraw
+        invalidate()
+    }
+
 
     fun clearCanvas() {
         path.reset()

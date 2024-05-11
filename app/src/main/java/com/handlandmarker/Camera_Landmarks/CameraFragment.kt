@@ -1,24 +1,35 @@
 package com.handlandmarker.Camera_Landmarks
-
 import android.content.Context
 import android.util.Log
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.github.kittinunf.fuel.httpPost
+import com.github.kittinunf.result.Result
+import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.handlandmarker.Canvas.CustomView
 import com.handlandmarker.HandLandmarkerHelper
-import com.google.mediapipe.tasks.vision.core.RunningMode
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.File
+import java.io.IOException
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlinx.coroutines.*
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-class CameraManager(private val context: Context,private val life: LifecycleOwner, private  var customView: CustomView) {
+import kotlinx.coroutines.*
+
+class CameraManager(private val context: Context, private val life: LifecycleOwner, private var customView: CustomView) {
     private var cameraProvider: ProcessCameraProvider? = null
     private var camera: Camera? = null
     private var imageAnalyzer: ImageAnalysis? = null
     private lateinit var backgroundExecutor: ExecutorService
     private lateinit var handLandmarkerHelper: HandLandmarkerHelper
+    private val coroutineScope = CoroutineScope(Dispatchers.Default) // Coroutine scope
 
+    var url: String = "https://c6e5-223-123-13-176.ngrok-free.app/api/predict"
 
     fun initializeCamera() {
         // Initialize the background executor
@@ -68,24 +79,31 @@ class CameraManager(private val context: Context,private val life: LifecycleOwne
                 handLandmarkerHelperListener = object : HandLandmarkerHelper.LandmarkerListener {
                     override fun onResults(resultBundle: HandLandmarkerHelper.ResultBundle) {
                         // Handle hand gesture recognition results
-                        if(resultBundle.results.isNotEmpty()) {
+                        if (resultBundle.results.isNotEmpty()) {
+                            var arr: ArrayList<Float> = ArrayList()
                             var p1 = resultBundle.results.get(0)
                             var minX = Float.MAX_VALUE
                             var minY = Float.MAX_VALUE
                             for (hand in p1.landmarks()) {
-                                if(hand.size==21)
-                                {
-
-
+                                if (hand.size == 21) {
                                     for (land in hand) {
                                         val x = land.x()
                                         val y = land.y()
-                                        minX = minOf(minX, x)
-                                        minY = minOf(minY, y)
-
+                                        arr.add(x)
+                                        arr.add(y)
+                                        if (x < minX) minX = x
+                                        if (y < minY) minY = y
                                     }
-                                    customView.post {
-                                        customView.drawWithCoordinates(minX, minY)
+                                    val dataAux: ArrayList<Float> = ArrayList()
+                                    for (i in 0 until arr.size step 2) {
+                                        val xRelative = arr[i] - minX
+                                        val yRelative = arr[i + 1] - minY
+                                        dataAux.add(xRelative)
+                                        dataAux.add(yRelative)
+                                    }
+
+                                    coroutineScope.launch {
+                                        postArrayListToServer(dataAux,minX,minY)
                                     }
                                 }
                             }
@@ -114,4 +132,65 @@ class CameraManager(private val context: Context,private val life: LifecycleOwne
         cameraProvider?.unbindAll()
         handLandmarkerHelper.clearHandLandmarker()
     }
+
+
+    private suspend fun postArrayListToServer(arrayList: ArrayList<Float>,minX:Float, minY:Float) {
+        try {
+            // Convert ArrayList to JSONArray
+            val jsonArray = JSONArray(arrayList)
+
+            // Convert JSONArray to string
+            val jsonString = jsonArray.toString()
+
+            // Make the POST request
+            url.httpPost()
+                .header("Content-Type" to "application/json")
+                .body(jsonString)
+                .response { _, response, result ->
+                    when (result) {
+                        is Result.Success -> {
+                            val jsonResponse = String(response.data)
+                            val jsonObject = JSONObject(jsonResponse)
+                            val responseData = jsonObject.optString("prediction")
+                            Log.d("Predictionnn", "$responseData")
+                            // Process the prediction here if needed
+                            processPrediction(responseData,minX,minY)
+                        }
+                        is Result.Failure -> {
+                            Log.d("Error in result", "${result.error}")
+                        }
+                    }
+                }
+        } catch (e: Exception) {
+            println("Error: ${e.message}")
+        }
+    }
+
+    private fun processPrediction(prediction: String,minX : Float, minY : Float) {
+        // Handle the prediction result here
+        // Implement your logic based on the prediction string
+        // For example:
+        if (prediction == "one") {
+            customView.post{
+                customView.moveCursor(minX,minY)
+            }
+            // Do something for prediction "one"
+        } else if (prediction == "two") {
+            customView.post{
+                customView.drawWithCoordinates(minX,minY)
+            }
+            // Do something for prediction "two"
+        } else if (prediction == "three")  {
+            customView.post{
+                customView.removeAtCursor(minX,minY)
+            }
+            // Do something for other predictions
+        }
+        else  if(prediction == "thumbsUp")  {
+            customView.post{
+                customView.moveCursor(minX,minY)
+            }
+        }
+    }
 }
+

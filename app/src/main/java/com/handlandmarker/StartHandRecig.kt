@@ -31,8 +31,10 @@ class StartHandRecig : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
         setContentView(R.layout.canvas)
-        view1 = findViewById(R.id.Canvas)
+        view1 = findViewById(R.id.Canvas1)
         C1 = CameraManager(this, this,view1)
         C1.initializeCamera()
 

@@ -26,7 +26,7 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="SignOut"
+            android:text="Add User"
             android:layout_gravity="end"
             android:id="@+id/SignOut_User"
             ></Button>

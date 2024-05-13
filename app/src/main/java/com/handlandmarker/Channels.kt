@@ -2,6 +2,7 @@ package com.handlandmarker
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.studify.R
@@ -20,6 +21,7 @@ class Channels: AppCompatActivity() {
     lateinit var Text: TextView
     lateinit var Screen: TextView
 
+    lateinit var Canvas: TextView
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,6 +36,13 @@ class Channels: AppCompatActivity() {
         Audio = findViewById(R.id.voice_channel)
         Text = findViewById(R.id.text_channel)
         Screen = findViewById(R.id.scrn_share_channel)
+        Canvas = findViewById(R.id.Canvas_SS)
+
+
+        Canvas.setOnClickListener(View.OnClickListener {
+            val intent = Intent(baseContext, StartHandRecig::class.java)
+            startActivity(intent)
+        })
 
         Vedio.setOnClickListener {
             val intent = Intent(this, VedioCall_Activity::class.java)
@@ -54,8 +63,7 @@ class Channels: AppCompatActivity() {
         }
 
         Screen.setOnClickListener {
-            //val intent = Intent(this, ScreenSharing_Activity::class.java)
-            val intent = Intent(this, StartHandRecig::class.java)
+            val intent = Intent(this, ScreenSharing_Activity::class.java)
             intent.putExtra("groupID", CurrentUser.CurrentGroup.getGroupID()) // Pass the My_Group object
             startActivity(intent)
         }

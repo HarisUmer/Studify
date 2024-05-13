@@ -68,5 +68,20 @@
         android:textSize="25sp"
         android:background="@drawable/dp_border_sqr"
         />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/Canvas_SS"
+        android:layout_marginTop="10dp"
+
+        android:padding="10dp"
+        android:text="Canvas Draw"
+        android:drawableStart="@drawable/video_vector"
+        android:drawablePadding="10sp"
+        android:textStyle="bold"
+        android:fontFamily="sans-serif-black"
+        android:textSize="25sp"
+        android:background="@drawable/dp_border_sqr"
+        />
 
 </LinearLayout>

@@ -29,7 +29,7 @@ class CameraManager(private val context: Context, private val life: LifecycleOwn
     private lateinit var handLandmarkerHelper: HandLandmarkerHelper
     private val coroutineScope = CoroutineScope(Dispatchers.Default) // Coroutine scope
 
-    var url: String = "https://c6e5-223-123-13-176.ngrok-free.app/api/predict"
+    var url: String = "https://14ec-223-123-6-14.ngrok-free.app/api/predict"
 
     fun initializeCamera() {
         // Initialize the background executor
@@ -101,10 +101,11 @@ class CameraManager(private val context: Context, private val life: LifecycleOwn
                                         dataAux.add(xRelative)
                                         dataAux.add(yRelative)
                                     }
-
-                                    coroutineScope.launch {
-                                        postArrayListToServer(dataAux,minX,minY)
+                                    customView.post{
+                                        customView.drawWithCoordinates(minX,minY)
                                     }
+
+
                                 }
                             }
                         }

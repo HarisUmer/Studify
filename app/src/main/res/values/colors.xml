@@ -9,19 +9,19 @@
     <color name="teal_700">#FF018786</color>
     <color name= "Lavender">#8692f7 </color>
 
-    <color name="mp_color_primary">#FF4081</color>
+    <color name="mp_color_primary">#8692f7</color>
 
     <!-- Define the variant of the primary color -->
-    <color name="mp_color_primary_variant">#E91E63</color>
+    <color name="mp_color_primary_variant">#8692f7</color>
 
     <!-- Define the dark variant of the primary color -->
-    <color name="mp_color_primary_dark">#C2185B</color>
+    <color name="mp_color_primary_dark">#8692f7</color>
 
     <!-- Define the secondary color -->
-    <color name="mp_color_secondary">#3F51B5</color>
+    <color name="mp_color_secondary">#FF030AC5</color>
 
     <!-- Define the variant of the secondary color -->
-    <color name="mp_color_secondary_variant">#303F9F</color>
+    <color name="mp_color_secondary_variant">#FF030AC5</color>
 
     <!-- Define the color for error states -->
     <color name="mp_color_error">#FF5722</color>

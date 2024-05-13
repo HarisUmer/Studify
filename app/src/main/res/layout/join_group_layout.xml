@@ -8,25 +8,13 @@
     android:gravity="center"
     tools:context="com.handlandmarker.MainPages.MainActivity">
 
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:backgroundTint="@color/white"
-        android:layout_marginStart="25dp"
-        android:layout_marginEnd="25dp"
-        android:layout_marginTop="50dp"
-        android:layout_marginBottom="50dp"
-        android:foregroundGravity="center"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="10dp"
-        android:alpha="0.95"
-        >
+
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="20dp" >
+            android:padding="10dp" >
 
             <SearchView
                 android:layout_width="match_parent"
@@ -51,9 +39,5 @@
 
         </LinearLayout>
 
-
-
-
-    </androidx.cardview.widget.CardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

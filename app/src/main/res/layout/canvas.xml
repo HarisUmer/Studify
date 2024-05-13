@@ -8,6 +8,6 @@
     <com.handlandmarker.Canvas.CustomView
         android1:layout_width="match_parent"
         android1:layout_height="match_parent"
-        android1:id="@+id/Canvas"
+        android1:id="@+id/Canvas1"
         ></com.handlandmarker.Canvas.CustomView>
 </LinearLayout>

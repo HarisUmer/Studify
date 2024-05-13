@@ -37,6 +37,7 @@
             <item
                 android:id="@+id/nav_logout"
                 android:icon="@drawable/logout_vector"
+                android:onClick="logout"
                 android:title="Logout"/>
         </menu>
 

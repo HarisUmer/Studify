@@ -29,6 +29,7 @@ import java.util.Set;
 
 public class FirebaseHelper {
     public String Member_presenting = "Member_Presenting";
+    public String Member_presenting_ID = "Member_ID";
     public FirebaseFirestore db_user;
     public FirebaseFirestore db_grp;
     public String _Email = "Email";
@@ -153,7 +154,8 @@ public class FirebaseHelper {
                                                                         Map<String, Object> ScreenShareCha = new HashMap<>();
                                                                         ArrayList<Strings> arr = new ArrayList<>();
                                                                         ScreenShareCha.put(Members_Present, arr);
-                                                                        ScreenShareCha.put(Member_presenting,"");
+                                                                        ScreenShareCha.put(Member_presenting,"NULL");
+                                                                        ScreenShareCha.put(Member_presenting_ID,-1);
                                                                         db_grp.collection(_Groups).document(groupID).collection(_ScreenShare).document(_ScreenShare+Group_Name1).set(ScreenShareCha)
                                                                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                                                     @Override
@@ -524,10 +526,12 @@ public class FirebaseHelper {
                 if (documentSnapshot.contains(Member_presenting)) {
                     // Get the value of Member_presenting field
                     String presentingUserID = documentSnapshot.getString(Member_presenting);
-                    listener.onMemberPresenting(presentingUserID);
+                    double id = documentSnapshot.getDouble(Member_presenting_ID);
+                    int idd= (int) id;
+                    listener.onMemberPresenting(presentingUserID,idd);
                 } else {
                     // The Member_presenting field doesn't exist or is null
-                    listener.onMemberPresenting(null);
+                    listener.onMemberPresenting("NULL", -1);
                 }
             } else {
                 Log.d("Firebase", "Voice chat group document does not exist");
@@ -536,8 +540,114 @@ public class FirebaseHelper {
     }
 
     public interface OnMemberPresentingListener {
-        void onMemberPresenting(String presentingUserID);
+        void onMemberPresenting(String presentingUserID, int USD_REMORT);
     }
 
+    public void addUserIDBroadcast(int IDD) {
+        String groupID = CurrentUser.CurrentGroup.getGroupID();
+        String groupName = CurrentUser.CurrentGroup.getGroupName();
+
+        if (groupID != null && groupName != null) {
+            DocumentReference voiceChatGroupRef = db_grp.collection(_Groups)
+                    .document(groupID)
+                    .collection(_ScreenShare)
+                    .document(_ScreenShare + groupName);
+
+            voiceChatGroupRef.get().addOnSuccessListener(documentSnapshot -> {
+                String existingMembersPresent = documentSnapshot.getString(Member_presenting);
+
+                if(existingMembersPresent.contains( "NULL" ))
+                {
+                    // Update the MemberPresenting field
+                    String presentingUserID = CurrentUser.globalVariable.getUserID();
+                    if (presentingUserID != null) {
+                        voiceChatGroupRef.update(Member_presenting, presentingUserID)
+                                .addOnSuccessListener(aVoid -> Log.d("Firebase", "MemberPresenting updated successfully"))
+                                .addOnFailureListener(e -> Log.e("Firebase", "Error updating MemberPresenting: " + e.getMessage()));
+                        voiceChatGroupRef.update(Member_presenting_ID, IDD)
+                                .addOnSuccessListener(aVoid -> Log.d("Firebase", "MemberPresenting updated successfully"))
+                                .addOnFailureListener(e -> Log.e("Firebase", "Error updating MemberPresenting: " + e.getMessage()));
+                    }
+                }
+            }).addOnFailureListener(e -> Log.e("Firebase", "Error getting document: " + e.getMessage()));
+
+            }
+    }
+
+    public void RemoveUserIDBroadcast()
+    {
+        String groupID = CurrentUser.CurrentGroup.getGroupID();
+        String groupName = CurrentUser.CurrentGroup.getGroupName();
+
+        if (groupID != null && groupName != null) {
+            DocumentReference voiceChatGroupRef = db_grp.collection(_Groups)
+                    .document(groupID)
+                    .collection(_ScreenShare)
+                    .document(_ScreenShare + groupName);
+
+            voiceChatGroupRef.get().addOnSuccessListener(documentSnapshot -> {
+                String existingMembersPresent = documentSnapshot.getString(Member_presenting);
+
+                if(existingMembersPresent != "NULL" )
+                {
+                    // Update the MemberPresenting field
+                    String presentingUserID = CurrentUser.globalVariable.getUserID();
+                    if (presentingUserID.contains(existingMembersPresent)) {
+                        voiceChatGroupRef.update(Member_presenting, "NULL")
+                                .addOnSuccessListener(aVoid -> Log.d("Firebase", "MemberPresenting updated successfully"))
+                                .addOnFailureListener(e -> Log.e("Firebase", "Error updating MemberPresenting: " + e.getMessage()));
+                        voiceChatGroupRef.update(Member_presenting_ID, -1)
+                                .addOnSuccessListener(aVoid -> Log.d("Firebase", "MemberPresenting updated successfully"))
+                                .addOnFailureListener(e -> Log.e("Firebase", "Error updating MemberPresenting: " + e.getMessage()));
+                    }
+                }
+            }).addOnFailureListener(e -> Log.e("Firebase", "Error getting document: " + e.getMessage()));
+
+        }
+    }
+
+    // Define an interface for the callback
+    public interface OnDocumentIDsFetchedListener {
+        void onDocumentIDsFetched(ArrayList<String> documentIDs);
+    }
+
+    // Method to fetch all document IDs in the _Groups collection
+    public void loadAllGroupDocumentIDs(OnDocumentIDsFetchedListener listener) {
+        db_grp.collection(_Groups).get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    ArrayList<String> documentIDs = new ArrayList<>();
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        if(CurrentUser.checkGroup(document.getId()))
+                                CurrentUser.AllGroupIDs.add(document.getId());
+
+                    }
+                    listener.onDocumentIDsFetched(documentIDs);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firebase", "Error fetching document IDs: " + e.getMessage());
+                    listener.onDocumentIDsFetched(null); // Handle failure
+                });
+    }
+
+    public interface OnGroupNameFetchedListener {
+        void onGroupNameFetched(String groupName);
+    }
+
+    // Method to fetch a group's name by its ID
+    public void getGroupNameByID(String groupID, OnGroupNameFetchedListener listener) {
+        db_grp.collection(_Groups).document(groupID).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String groupName = documentSnapshot.getString(Group_Name);
+                        listener.onGroupNameFetched(groupName);
+                    } else {
+                        listener.onGroupNameFetched(null); // Group document with the provided ID does not exist
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firebase", "Error fetching group name: " + e.getMessage());
+                    listener.onGroupNameFetched(null); // Failed to fetch group name
+                });
+    }
 }
 
